@@ -23,13 +23,13 @@ import android.util.Log;
 import android.widget.Toast;
 
 import org.jboss.aerogear.android.Callback;
-import org.jboss.aerogear.android.unifiedpush.PushConfig;
 import org.jboss.aerogear.android.unifiedpush.PushRegistrar;
-import org.jboss.aerogear.android.unifiedpush.Registrations;
 import org.jboss.aerogear.unifiedpush.helloworld.R;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import org.jboss.aerogear.android.unifiedpush.AeroGearGCMPushConfiguration;
+import org.jboss.aerogear.android.unifiedpush.RegistrarManager;
 
 import static org.jboss.aerogear.unifiedpush.helloworld.Constants.*;
 
@@ -47,18 +47,20 @@ public class RegisterActivity extends Activity {
 
         try {
 
-            PushConfig config = new PushConfig(new URI(UNIFIED_PUSH_URL), GCM_SENDER_ID);
-            config.setVariantID(VARIANT_ID);
-            config.setSecret(SECRET);
+            AeroGearGCMPushConfiguration config = RegistrarManager.config("register", AeroGearGCMPushConfiguration.class);
 
-            Registrations registrations = new Registrations();
-            PushRegistrar registrar = registrations.push("register", config);
+            config.addSenderId(GCM_SENDER_ID)
+                    .setPushServerURI(new URI(UNIFIED_PUSH_URL))
+                    .setVariantID(VARIANT_ID)
+                    .setSecret(SECRET);
+
+            PushRegistrar registrar = config.asRegistrar();
             registrar.register(getApplicationContext(), new Callback<Void>() {
                 @Override
                 public void onSuccess(Void data) {
                     Toast.makeText(getApplicationContext(),
-                        getApplicationContext().getString(R.string.registration_successful),
-                        Toast.LENGTH_LONG).show();
+                            getApplicationContext().getString(R.string.registration_successful),
+                            Toast.LENGTH_LONG).show();
 
                     Intent intent = new Intent(getApplicationContext(), MessagesActivity.class);
                     startActivity(intent);
